@@ -6,7 +6,7 @@ import pynput
 import win32gui
 
 window_name = "Roblox"
-stop_key = "Key.f8"
+stop_key = "Key.f6"
 switch_window_delay = 0.4
 
 
