@@ -5,8 +5,7 @@ import time
 import pynput
 import win32gui
 
-window_name = "Window_Name"
-chat_key = "/"
+window_name = "window_name"
 stop_key = "Key.f8"
 switch_window_delay = 0.8
 
@@ -63,8 +62,8 @@ class Main:
 
         return phrase
 
-    def say(self, string):
-        pynput.keyboard.Controller().tap(key=chat_key)
+    def send_input(self, string):
+        pynput.keyboard.Controller().tap(key="/")
         time.sleep(0.05)
         pynput.keyboard.Controller().type(string)
         time.sleep(0.05)
@@ -80,7 +79,7 @@ class Main:
                     break
 
                 win32gui.SetForegroundWindow(handle)
-                self.say(self.random_phrase())
+                self.send_input(self.random_phrase())
                 time.sleep(switch_window_delay)
 
     def on_press(self, key):
