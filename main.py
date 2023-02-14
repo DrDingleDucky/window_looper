@@ -13,6 +13,7 @@ switch_window_delay = 0.4
 class Main:
     def __init__(self):
         self.phrases = []
+        self.last_phrase = ""
 
         self.running = True
 
@@ -31,16 +32,46 @@ class Main:
 
         return window_handles
 
-    def send_input(self):
+    def random_phrase(self):
+        if len(self.phrases) != 0:
+            phrase_index = random.randint(0, len(self.phrases) - 1)
+            phrase = self.phrases[phrase_index]
+
+            if self.last_phrase.lower() == phrase.lower():
+                if len(self.phrases) > 1:
+                    if phrase_index == 0:
+                        phrase = self.phrases[phrase_index + 1]
+                    elif phrase_index == len(self.phrases) - 1:
+                        phrase = self.phrases[phrase_index - 1]
+                    else:
+                        phrase = self.phrases[phrase_index + 1]
+
+            random_number = random.randint(0, 2)
+
+            if random_number == 0:
+                phrase = phrase.lower()
+            elif random_number == 1:
+                phrase = phrase.upper()
+            else:
+                phrase = phrase.title()
+
+        else:
+            phrase = ""
+
+        self.last_phrase = phrase
+
+        return phrase
+
+    def send_input(self, string):
         pynput.keyboard.Controller().tap(key="/")
         time.sleep(0.05)
-        pynput.keyboard.Controller().type(random.choice(self.phrases))
+        pynput.keyboard.Controller().type(string)
         time.sleep(0.05)
         pynput.keyboard.Controller().tap(pynput.keyboard.Key.enter)
 
     def main_loop(self):
         while True:
-            if len(self.get_window_handles()) == 0:
+            if len(self.get_window_handles()) == 0 or not self.running:
                 break
 
             for handle in self.get_window_handles():
