@@ -1,25 +1,29 @@
-import random
 import threading
 import time
 
-import pynput
+import win32api
 import win32gui
+from pynput import keyboard
 
-window_name = "Roblox"
-stop_key = "Key.f6"
-switch_window_delay = 0.4
+window_name = "Command Prompt"
+start_stop_key = "Key.f6"
+window_switch_delay = 0.5
 
 
 class Main:
     def __init__(self):
-        self.phrases = []
-        self.last_phrase = ""
-
         self.running = True
 
-        with open("phrases.txt") as phrases_file:
-            for line in phrases_file:
-                self.phrases.append(line.strip())
+    def get_window_names(self):
+        window_names = []
+
+        def winEnumHandler(hwnd, ctx):
+            if (win32gui.IsWindowVisible(hwnd)):
+                window_names.append(win32gui.GetWindowText(hwnd))
+
+        win32gui.EnumWindows(winEnumHandler, None)
+
+        return [string for string in window_names if string != ""]
 
     def get_window_handles(self):
         window_handles = []
@@ -32,63 +36,33 @@ class Main:
 
         return window_handles
 
-    def random_phrase(self):
-        if len(self.phrases) != 0:
-            phrase_index = random.randint(0, len(self.phrases) - 1)
-            phrase = self.phrases[phrase_index]
-
-            if self.last_phrase.lower() == phrase.lower():
-                if len(self.phrases) > 1:
-                    if phrase_index == 0:
-                        phrase = self.phrases[phrase_index + 1]
-                    elif phrase_index == len(self.phrases) - 1:
-                        phrase = self.phrases[phrase_index - 1]
-                    else:
-                        phrase = self.phrases[phrase_index + 1]
-
-            random_number = random.randint(0, 2)
-
-            if random_number == 0:
-                phrase = phrase.lower()
-            elif random_number == 1:
-                phrase = phrase.upper()
-            else:
-                phrase = phrase.title()
-
-        else:
-            phrase = ""
-
-        self.last_phrase = phrase
-
-        return phrase
-
-    def send_input(self, string):
-        pynput.keyboard.Controller().tap(key="/")
-        time.sleep(0.05)
-        pynput.keyboard.Controller().type(string)
-        time.sleep(0.05)
-        pynput.keyboard.Controller().tap(pynput.keyboard.Key.enter)
-
     def main_loop(self):
         while True:
-            if len(self.get_window_handles()) == 0 or not self.running:
+            if len(self.get_window_handles()) == 0:
+                print("Error: No Handles Found")
                 break
 
-            for handle in self.get_window_handles():
-                if not self.running:
-                    break
+            if self.running:
+                for handle in self.get_window_handles():
+                    if not self.running:
+                        break
 
-                win32gui.SetForegroundWindow(handle)
-                self.send_input(self.random_phrase())
-                time.sleep(switch_window_delay)
+                    win32gui.SetForegroundWindow(handle)
+
+                    keyboard.Controller().type("python")
+                    keyboard.Controller().tap(keyboard.Key.enter)
+                    keyboard.Controller().type("quit()")
+                    keyboard.Controller().tap(keyboard.Key.enter)
+
+                    time.sleep(window_switch_delay)
 
     def on_press(self, key):
-        if str(key) == stop_key:
-            self.running = False
+        if str(key) == start_stop_key:
+            self.running = not self.running
 
 
 def keyboard_listener(main):
-    with pynput.keyboard.Listener(on_press=lambda key: main.on_press(key)) as keyboard_listener:
+    with keyboard.Listener(on_press=lambda key: main.on_press(key)) as keyboard_listener:
         keyboard_listener.join()
 
 
@@ -100,8 +74,22 @@ def main():
     keyboard_listener_thred.daemon = True
     keyboard_listener_thred.start()
 
-    main.main_loop()
+    main_loop_thred = threading.Thread(target=main.main_loop)
+    main_loop_thred.daemon = True
+    main_loop_thred.start()
+
+    while True:
+        command = input("Type 'quit' to quit: -> ").lower()
+
+        if command == "quit":
+            print("Quitting...")
+            break
+
+        else:
+            print(f"'{command}' is not recognized. Type 'quit' to quit.")
 
 
 if __name__ == "__main__":
     main()
+
+print("Done")
