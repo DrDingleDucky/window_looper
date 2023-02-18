@@ -1,8 +1,7 @@
 import threading
 import time
 
-import win32api
-import win32gui
+from win32gui import GetWindowText, IsWindowVisible, EnumWindows, SetForegroundWindow
 from pynput import keyboard
 
 window_name = "Command Prompt"
@@ -18,10 +17,10 @@ class Main:
         window_names = []
 
         def winEnumHandler(hwnd, ctx):
-            if (win32gui.IsWindowVisible(hwnd)):
-                window_names.append(win32gui.GetWindowText(hwnd))
+            if (IsWindowVisible(hwnd)):
+                window_names.append(GetWindowText(hwnd))
 
-        win32gui.EnumWindows(winEnumHandler, None)
+        EnumWindows(winEnumHandler, None)
 
         return [string for string in window_names if string != ""]
 
@@ -29,25 +28,21 @@ class Main:
         window_handles = []
 
         def winEnumHandler(window_handle, ctx):
-            if (win32gui.IsWindowVisible(window_handle) and win32gui.GetWindowText(window_handle) == window_name):
+            if (IsWindowVisible(window_handle) and GetWindowText(window_handle) == window_name):
                 window_handles.append(window_handle)
 
-        win32gui.EnumWindows(winEnumHandler, None)
+        EnumWindows(winEnumHandler, None)
 
         return window_handles
 
     def main_loop(self):
         while True:
-            if len(self.get_window_handles()) == 0:
-                print("Error: No Handles Found")
-                break
-
             if self.running:
                 for handle in self.get_window_handles():
                     if not self.running:
                         break
 
-                    win32gui.SetForegroundWindow(handle)
+                    SetForegroundWindow(handle)
 
                     keyboard.Controller().type("python")
                     keyboard.Controller().tap(keyboard.Key.enter)
@@ -79,6 +74,10 @@ def main():
     main_loop_thred.start()
 
     while True:
+        if len(main.get_window_handles()) == 0:
+            print("Error: No Handles Found")
+            break
+
         command = input("Type 'quit' to quit: -> ").lower()
 
         if command == "quit":
