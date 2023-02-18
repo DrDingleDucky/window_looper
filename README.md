@@ -1,3 +1,3 @@
 # Window-Looper
 
-Work in Progress
+Loop through multiple windows and send inputs.
