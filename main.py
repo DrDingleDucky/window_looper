@@ -24,7 +24,7 @@ class Main:
 
         return [string for string in window_names if string != ""]
 
-    def get_window_handles(self):
+    def get_window_handles(self, window_name):
         window_handles = []
 
         def winEnumHandler(window_handle, ctx):
@@ -38,7 +38,7 @@ class Main:
     def main_loop(self):
         while True:
             if self.running:
-                for handle in self.get_window_handles():
+                for handle in self.get_window_handles(window_name):
                     if not self.running:
                         break
 
